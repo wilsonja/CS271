@@ -26,7 +26,7 @@ byePrompt	BYTE	"Goodbye! Thanks for playing!", 0
 space		BYTE	32, 0
 
 numArray	DWORD	ARRAY_SIZE DUP(?)			; array holding the 10 integers
-inputString	BYTE	255	DUP(?)			 	;the inputted string
+inputString	BYTE	255	DUP(?)			 	; the inputted string
 inputSize	DWORD	?					; size of the inputted string
 sum		DWORD	?					; calculated sum
 avg		DWORD	?					; calculated average
