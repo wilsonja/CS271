@@ -8,49 +8,49 @@ TITLE Programming Assignment #6a     (Prog06a.asm)
 
 INCLUDE Irvine32.inc
 
-ARRAY_SIZE = 10											; constant max size of the array
+ARRAY_SIZE = 10							; constant max size of the array
 
 .data
-progTitle		BYTE	"Programming Assignment 6a: Designing low-level I/O procedures", 0
-progBy			BYTE	"Written by: Jacob Wilson", 0
+progTitle	BYTE	"Programming Assignment 6a: Designing low-level I/O procedures", 0
+progBy		BYTE	"Written by: Jacob Wilson", 0
 progInstruct	BYTE	"Please provide 10 unsigned decimal integers.", 13, 10
-				BYTE	"Each number needs to be small enough to fit inside a 32 bit register.", 13, 10
-				BYTE	"After you have finished inputting the raw numbers, I will display a list", 13, 10
-				BYTE	"of the integers, their sum, and their average value.", 0
-enterPrompt		BYTE	"Please enter an unsigned integer: ", 0
-errorPrompt		BYTE	"ERROR: You did not enter an unsigned integer, or your number was too large.", 0
-numsPrompt		BYTE	"You entered the following numbers: ", 0
-sumPrompt		BYTE	"The sum of these numbers is: ", 0
-avgPrompt		BYTE	"The average is: ", 0
-byePrompt		BYTE	"Goodbye! Thanks for playing!", 0
-space			BYTE	32, 0
+		BYTE	"Each number needs to be small enough to fit inside a 32 bit register.", 13, 10
+		BYTE	"After you have finished inputting the raw numbers, I will display a list", 13, 10
+		BYTE	"of the integers, their sum, and their average value.", 0
+enterPrompt	BYTE	"Please enter an unsigned integer: ", 0
+errorPrompt	BYTE	"ERROR: You did not enter an unsigned integer, or your number was too large.", 0
+numsPrompt	BYTE	"You entered the following numbers: ", 0
+sumPrompt	BYTE	"The sum of these numbers is: ", 0
+avgPrompt	BYTE	"The average is: ", 0
+byePrompt	BYTE	"Goodbye! Thanks for playing!", 0
+space		BYTE	32, 0
 
-numArray		DWORD	ARRAY_SIZE DUP(?)				; array holding the 10 integers
-inputString		BYTE	255	DUP(?)						; the inputted string
-inputSize		DWORD	?								; size of the inputted string
-sum				DWORD	?								; calculated sum
-avg				DWORD	?								; calculated average
-numDigits		DWORD	0								; track the number of inputs
+numArray	DWORD	ARRAY_SIZE DUP(?)			; array holding the 10 integers
+inputString	BYTE	255	DUP(?)			 	;the inputted string
+inputSize	DWORD	?					; size of the inputted string
+sum		DWORD	?					; calculated sum
+avg		DWORD	?					; calculated average
+numDigits	DWORD	0					; track the number of inputs
 
 ; ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ Macros ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 ; method for getString macro followed from CS271 Lecture 26
-getString		MACRO	stringVar, stringPrompt	
-	push	ecx											; save registers
+getString	MACRO	stringVar, stringPrompt	
+	push	ecx						; save registers
 	push	edx
 	displayString	stringPrompt						
-	mov		edx, OFFSET	stringVar						; save the string in variable
-	mov		ecx, (SIZEOF stringVar) - 1					; save the size minus the end of line character
-	call	ReadString									; accept user input
-	pop		edx
-	pop		ecx
+	mov	edx, OFFSET	stringVar			; save the string in variable
+	mov	ecx, (SIZEOF stringVar) - 1			; save the size minus the end of line character
+	call	ReadString					; accept user input
+	pop	edx
+	pop	ecx
 ENDM
 
 ; method for displayString macro followed from CS271 Lecture 26
 displayString	MACRO	inputString
-	push	edx											; save register
-	mov		edx, OFFSET inputString						; to go string location
-	call	WriteString									; display string
-	pop		edx
+	push	edx						; save register
+	mov	edx, OFFSET inputString				; to go string location
+	call	WriteString					; display string
+	pop	edx
 ENDM
 ; ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
@@ -60,14 +60,14 @@ main PROC
 	call	introduction
 
 ; start a loop to obtain the 10 integers
-	mov		ecx, ARRAY_SIZE								; loop limited to 10 integers
+	mov	ecx, ARRAY_SIZE					; loop limited to 10 integers
 GetNums:
 	push	OFFSET	inputSize
 	push	OFFSET	inputString
 	push	OFFSET numArray
 	push	OFFSET	numDigits
 	call	readVal
-	inc		numDigits									; tracks the number of values entered
+	inc	numDigits					; tracks the number of values entered
 	loop	GetNums
 	call	Crlf
 
@@ -141,50 +141,50 @@ introduction ENDP
 readVal	PROC
 	; set up stack
 	push	ebp
-	mov		ebp, esp
-	push	ecx											; save ecx for main loop
+	mov	ebp, esp
+	push	ecx						; save ecx for main loop
 
 StartString:
 	; initialized with string input
-	getString	inputString, enterPrompt				; get string input
-	mov		ebx, [ebp + 20]								; get location for string size variable
-	mov		[ebx], eax									; store the string size
-	mov		ecx, [ebx]									; set parse counter to size
-	mov		esi, [ebp + 16]								; setup string location for lodsb
+	getString	inputString, enterPrompt		; get string input
+	mov	ebx, [ebp + 20]					; get location for string size variable
+	mov	[ebx], eax					; store the string size
+	mov	ecx, [ebx]					; set parse counter to size
+	mov	esi, [ebp + 16]					; setup string location for lodsb
 
 ParseString:
 	; load each string byte and validate to be integer 0-9
 	lodsb
-	cmp		ax, 48
-	jl		OutRange
-	cmp		ax, 57
-	jg		OutRange
-	loop	ParseString									; continue looping through entire string
+	cmp	ax, 48
+	jl	OutRange
+	cmp	ax, 57
+	jg	OutRange
+	loop	ParseString					; continue looping through entire string
 
 InRange:
 	; when valid, setup ParseDecimal32
-	mov		edx, [ebp + 16]								; inputted string location
-	mov		ecx, [ebx]									; inputted string size
-	call	ParseDecimal32								; easy conversion from string to int
-	jmp		Done
+	mov	edx, [ebp + 16]					; inputted string location
+	mov	ecx, [ebx]					; inputted string size
+	call	ParseDecimal32					; easy conversion from string to int
+	jmp	Done
 
 OutRange:
 	; if out of range, display error and try again
 	displayString	errorPrompt
 	call	Crlf
-	jmp		StartString
+	jmp	StartString
 
 Done:
 	; store the integer in the array
-	mov		edx, [ebp + 12]								; array location
-	mov		ebx, [ebp + 8]								
-	mov		ebx, [ebx]									; number of entries
-	imul	ebx, 4										; move appropriate number of bytes in array
-	mov		[ebx + edx], eax							; store at next open location
+	mov	edx, [ebp + 12]					; array location
+	mov	ebx, [ebp + 8]								
+	mov	ebx, [ebx]					; number of entries
+	imul	ebx, 4						; move appropriate number of bytes in array
+	mov	[ebx + edx], eax				; store at next open location
 
-	pop		ecx
-	pop		ebp
-	ret		16
+	pop	ecx
+	pop	ebp
+	ret	16
 readVal	ENDP
 
 ; ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
@@ -199,20 +199,20 @@ readVal	ENDP
 writeVal PROC
 	; set up stack
 	push	ebp
-	mov		ebp, esp
-	mov		esi, [ebp + 12]								; location of array
-	mov		ecx, [ebp + 8]								; size of array used for counter
+	mov	ebp, esp
+	mov	esi, [ebp + 12]					; location of array
+	mov	ecx, [ebp + 8]					; size of array used for counter
 
 DisplayLoop:
 	; loop through the array display each value
-	mov		eax, [esi]
+	mov	eax, [esi]
 	call	WriteDec
 	displayString	space
-	add		esi, 4										; move to next array location
+	add	esi, 4						; move to next array location
 	loop	DisplayLoop
 
-	pop		ebp
-	ret		8
+	pop	ebp
+	ret	8
 writeVal ENDP
 
 ; ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
@@ -228,25 +228,25 @@ writeVal ENDP
 calcSum PROC
 	; set up stack
 	push	ebp
-	mov		ebp, esp
-	mov		esi, [ebp + 16]								; location of array
-	mov		ebx, [ebp + 12]								; location of sum variable
-	mov		ecx, [ebp + 8]								; location of array size
+	mov	ebp, esp
+	mov	esi, [ebp + 16]					; location of array
+	mov	ebx, [ebp + 12]					; location of sum variable
+	mov	ecx, [ebp + 8]					; location of array size
 
 SumLoop:
 	; loop through array summing values
-	mov		eax, [esi]
-	add		[ebx], eax									; accumulate in sum variable
-	add		esi, 4										; move to next array position
+	mov	eax, [esi]
+	add	[ebx], eax					; accumulate in sum variable
+	add	esi, 4						; move to next array position
 	loop	SumLoop
 
 	; display the final sum
-	mov		eax, [ebx]
+	mov	eax, [ebx]
 	call	WriteDec
 	call	Crlf
 
-	pop		ebp
-	ret		12
+	pop	ebp
+	ret	12
 calcSum ENDP
 
 ; ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
@@ -262,23 +262,23 @@ calcSum ENDP
 calcAvg PROC
 	; set up stack
 	push	ebp
-	mov		ebp, esp
-	mov		ecx, [ebp + 16]								; location of average variable
-	mov		eax, [ebp + 12]								; sum variable
-	mov		ebx, [ebp + 8]								; location of array size
+	mov	ebp, esp
+	mov	ecx, [ebp + 16]					; location of average variable
+	mov	eax, [ebp + 12]					; sum variable
+	mov	ebx, [ebp + 8]					; location of array size
 
 	; perform the division
 	cdq	
 	idiv	ebx
-	mov		[ecx], eax									; store calculated average
+	mov	[ecx], eax					; store calculated average
 
 	; display the calculated average
-	mov		eax, [ecx]
+	mov	eax, [ecx]
 	call	WriteDec
 	call	Crlf
 
-	pop		ebp
-	ret		12
+	pop	ebp
+	ret	12
 calcAvg ENDP
 
 ; ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
